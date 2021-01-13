@@ -1,65 +1,61 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom'; 
 import { ApolloProvider, ApolloClient, InMemoryCache, useQuery, gql } from '@apollo/client';
 
 const client = new ApolloClient({
-  uri: 'https://48p1r2roz4.sse.codesandbox.io',
+  uri: "https://71z1g.sse.codesandbox.io/",
   cache: new InMemoryCache()
 });
-
-// client
-//   .query({
-//     query: gql`
-//       query GetRates {
-//         rates(currency: "USD") {
-//           currency
-//         }
-//       }
-//     `
-//   })
-//   .then(result => console.log(result));
-
+ 
 function App() {
+  const [selectedDog, setSelectedDog] = useState(null);
+
+  function onDogSelected({ target }) {
+    
+    // the selection is sent to the parent component 
+    // via the provided onDogSelected function
+    setSelectedDog(target.value);
+  }
+ 
   return(
     <ApolloProvider client={client}>
       <div>
-        <h2>My first Apollo app 🚀</h2>
-        <ExchangeRates />
+        <h2>Building Query components 🚀</h2> 
+        <Dogs />
       </div>
     </ApolloProvider>
   ); 
-}
-
-const EXCHANGE_RATES = gql`
-  query GetExchangeRates {
-    rates(currency: "USD") {
-      currency
-      rate
+} 
+ 
+const GET_DOGS = gql`
+ query GetDogs {
+    dogs {
+      id
+      breed
     }
   }
 `;
 
-function ExchangeRates() {
-  const { loading, error, data } = useQuery(EXCHANGE_RATES);
+function Dogs({ onDogSelected }) {
+  const { loading, error, data } = useQuery(GET_DOGS);
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
+  if (loading) return 'Loading...';
+  if (error) return `Error! ${error.message}`;
 
-  return data.rates.map(({ currency, rate }) => (
-    <div key={currency}>
-      <p>
-        {currency}: {rate}
-      </p>
-    </div>
-  ));
+  return (
+    <select name="dog" onChange={onDogSelected}>
+      {data.dogs.map(dog => (
+        <option key={dog.id} value={dog.breed}>
+          {dog.breed}
+        </option>
+      ))}
+    </select>
+  );
 }
+  
 ReactDOM.render(
   <React.StrictMode>
-    <App>
-   
-    </App>
-   
-     
+    <App />    
   </React.StrictMode>,
   document.getElementById('root')
 );
